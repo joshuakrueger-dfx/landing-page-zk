@@ -20,6 +20,7 @@ test.describe('visual regression', () => {
 
       if (view.state) {
         await STATE_SETUP[view.state](page);
+        await settle(page);
       }
 
       // The page has no <video>/<canvas> and no non-deterministic media, so the
