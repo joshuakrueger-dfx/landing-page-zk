@@ -20,10 +20,11 @@ test.describe('visual regression', () => {
 
       if (view.state) {
         await STATE_SETUP[view.state](page);
-        // Replay settle's full scroll + rest before the shot. Empirically this
-        // ended the 30px fullPage height oscillation (2 consecutive red runs,
-        // then 3 green); the cause is unproven. The wait in openAllFaq covers
-        // the reflow right after opening, not this later pass.
+        // A second settle() after state setup empirically ended the 30px
+        // fullPage height oscillation (2 consecutive red runs, then 3 green);
+        // the cause is unproven. The call includes a full scroll + rest.
+        // The wait in openAllFaq covers the reflow right after opening,
+        // not this later pass.
         await settle(page);
       }
 
