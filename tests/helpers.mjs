@@ -43,6 +43,20 @@ export async function openAllFaq(page) {
     (expected) => document.querySelectorAll('.faq details[open]').length === expected,
     count,
   );
+  // Opening <details> grows the document. A fullPage screenshot taken mid-reflow
+  // is a flake; wait until scrollHeight is unchanged across two samples. The
+  // first waitForFunction tick is synchronous and must not pass (previous is
+  // unset), so a match can only happen on a later requestAnimationFrame poll.
+  await page.waitForFunction(
+    () => {
+      const height = document.documentElement.scrollHeight;
+      const previous = window.__zkFaqScrollHeight;
+      window.__zkFaqScrollHeight = height;
+      return previous !== undefined && previous === height;
+    },
+    undefined,
+    { polling: 'raf', timeout: 5_000 },
+  );
 }
 
 // Waits until the page has reached a stable visual state: fonts ready, network
