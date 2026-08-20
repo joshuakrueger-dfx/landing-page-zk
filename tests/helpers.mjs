@@ -44,9 +44,13 @@ export async function openAllFaq(page) {
     count,
   );
   // Opening <details> grows the document. A fullPage screenshot taken mid-reflow
-  // is a flake; wait until scrollHeight is unchanged across two samples. The
-  // first waitForFunction tick is synchronous and must not pass (previous is
-  // unset), so a match can only happen on a later requestAnimationFrame poll.
+  // is a flake; wait until scrollHeight is unchanged across two samples. Clear
+  // any leftover sample first — the first waitForFunction tick is synchronous
+  // and must not pass (previous is unset), so a match can only happen on a
+  // later requestAnimationFrame poll.
+  await page.evaluate(() => {
+    delete window.__zkFaqScrollHeight;
+  });
   await page.waitForFunction(
     () => {
       const height = document.documentElement.scrollHeight;

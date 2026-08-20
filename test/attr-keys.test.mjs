@@ -7,7 +7,7 @@ const template = readFileSync(join(root, 'scripts/i18n/page.template'), 'utf8');
 const generator = readFileSync(join(root, 'scripts/i18n/generate.py'), 'utf8');
 const strings = JSON.parse(readFileSync(join(root, 'scripts/i18n/strings/en.json'), 'utf8'));
 
-const ATTR_PLACEHOLDER_RE = /\b[\w:-]+\s*=\s*"\{\{(\w+)\}\}"/g;
+const ATTR_PLACEHOLDER_RE = /\b[\w:-]+\s*=\s*(["'])\{\{(\w+)\}\}\1/g;
 const ATTR_KEYS_BLOCK_RE = /ATTR_KEYS\s*=\s*frozenset\(\s*\{([^}]*)\}\s*\)/;
 const ATTR_KEYS_ENTRY_RE = /"(\w+)"/g;
 
@@ -15,7 +15,7 @@ const ATTR_KEYS_ENTRY_RE = /"(\w+)"/g;
 const GENERATOR_ATTR_KEYS = ['canonical_url', 'html_lang', 'locale_home', 'og_locale'];
 
 function attributePlaceholders(source) {
-  return new Set([...source.matchAll(ATTR_PLACEHOLDER_RE)].map((m) => m[1]));
+  return new Set([...source.matchAll(ATTR_PLACEHOLDER_RE)].map((m) => m[2]));
 }
 
 function attrKeys(source) {
@@ -41,7 +41,9 @@ describe('ATTR_KEYS', () => {
   });
 
   test('extraction finds string-backed attribute placeholders including og_title and og_image_alt', () => {
-    expect(stringAttrPlaceholders.size).toBeGreaterThan(0);
+    // Floor is today's intersection size. A regex that still catches og_title
+    // and og_image_alt but misses the rest must not pass.
+    expect(stringAttrPlaceholders.size).toBeGreaterThanOrEqual(12);
     expect(stringAttrPlaceholders.has('og_title')).toBe(true);
     expect(stringAttrPlaceholders.has('og_image_alt')).toBe(true);
   });
