@@ -45,11 +45,29 @@ test.describe('scrollbar neutralization', () => {
       expect(response?.ok()).toBeTruthy();
       await expect(page.locator('body')).toBeVisible();
 
-      const { gutter, innerWidth, clientWidth } = await page.evaluate(() => {
-        const innerWidth = window.innerWidth;
-        const clientWidth = document.documentElement.clientWidth;
-        return { gutter: innerWidth - clientWidth, innerWidth, clientWidth };
-      });
+      const { gutter, innerWidth, clientWidth, scrollHeight, clientHeight, styleId } =
+        await page.evaluate(() => {
+          const innerWidth = window.innerWidth;
+          const clientWidth = document.documentElement.clientWidth;
+          const scrollHeight = document.documentElement.scrollHeight;
+          const clientHeight = document.documentElement.clientHeight;
+          const styleId = document.getElementById('pw-scrollbar-neutral')?.id ?? null;
+          return {
+            gutter: innerWidth - clientWidth,
+            innerWidth,
+            clientWidth,
+            scrollHeight,
+            clientHeight,
+            styleId,
+          };
+        });
+      expect(
+        scrollHeight,
+        `page does not overflow vertically (scrollHeight=${scrollHeight}, clientHeight=${clientHeight}); gutter measurement is meaningless without overflow`,
+      ).toBeGreaterThan(clientHeight);
+      expect(styleId, `scrollbar neutralization style was not injected (style id=${styleId})`).toBe(
+        'pw-scrollbar-neutral',
+      );
       expect(
         gutter,
         `scrollbar took ${gutter}px of layout width (innerWidth=${innerWidth}, clientWidth=${clientWidth})`,

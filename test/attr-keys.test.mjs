@@ -9,6 +9,9 @@ const strings = JSON.parse(readFileSync(join(root, 'scripts/i18n/strings/en.json
 
 const DOUBLE_QUOTED_ATTR_RE = /\b[\w:-]+\s*=\s*"([^"]*)"/g;
 const SINGLE_QUOTED_ATTR_RE = /\b[\w:-]+\s*=\s*'([^']*)'/g;
+// Value must start at `{{` immediately after `=`; a quote in between (`="{{` / `='{{`)
+// fails this pattern and stays on the quoted extractors.
+const UNQUOTED_ATTR_RE = /\b[\w:-]+\s*=\s*(\{\{\w+\}\})/g;
 const PLACEHOLDER_RE = /\{\{(\w+)\}\}/g;
 const ATTR_KEYS_BLOCK_RE = /ATTR_KEYS\s*=\s*frozenset\(\s*\{([^}]*)\}\s*\)/;
 const ATTR_KEYS_ENTRY_RE = /"(\w+)"/g;
@@ -74,6 +77,14 @@ describe('ATTR_KEYS', () => {
     expect(
       found,
       `single-quoted attribute placeholders are not a valid state: html_attr() does not escape '. Found: ${found.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  test('rejects unquoted attribute placeholders', () => {
+    const found = [...placeholdersInQuotedAttrs(template, UNQUOTED_ATTR_RE)].sort();
+    expect(
+      found,
+      `unquoted attribute placeholders are not a valid state: html_attr() does not wrap values in quotes. Found: ${found.join(', ')}`,
     ).toEqual([]);
   });
 
