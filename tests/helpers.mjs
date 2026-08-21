@@ -28,6 +28,13 @@ export async function blockExternalNoise(page) {
 export async function installVisualDeterminism(page) {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await blockExternalNoise(page);
+  // Scrollbar width in fullPage mode depends on viewport height and shifts
+  // text wrapping unless it is neutralised.
+  await page.addInitScript(() => {
+    const style = document.createElement('style');
+    style.textContent = '::-webkit-scrollbar { width: 0; height: 0; } * { scrollbar-width: none; }';
+    document.documentElement.appendChild(style);
+  });
 }
 
 // Interactive-state setup: expand every FAQ <details> so the shot captures each
